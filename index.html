@@ -192,23 +192,20 @@
         <div class="boss-list-wrap" id="bossListWrap"></div>
         <button class="add-boss-btn" id="addBossBtn">➕ 添加新老板</button>
     </div>
-
     <!-- 右侧表单区域 -->
     <div class="main-area">
         <div class="card">
             <h1>✨无限暖暖代肝每日汇报生成器</h1>
-
             <div class="form-row">
                 <label>老板备注（尾号/昵称）</label>
                 <input id="bossName" placeholder="例如：尾号888 / 包月老板A">
             </div>
-
             <div class="form-row">
                 <label>选择代肝类型</label>
                 <select id="typeSel">
-                    <option value="daily">单日常</option>
-                    <option value="threeday">三日常</option>
-                    <option value="month">包月</option>
+                    <option value="single">单日常</option>
+                    <option value="double">双日常</option>
+                    <option value="triple">三日常</option>
                 </select>
             </div>
             <div class="grid-2">
@@ -233,7 +230,7 @@
             </div>
             <div class="grid-2">
                 <div class="form-row">
-                    <label>签到已兑换/已签到天数</label>
+                    <label>签到天数</label>
                     <input id="signDay" placeholder="数字">
                 </div>
                 <div class="form-row">
@@ -255,27 +252,25 @@
                 <label>园宝收购（仅三日常生效）</label>
                 <input id="yuanBao" placeholder="只填前面数字，固定 /600000">
             </div>
-
             <div class="check-list">
                 <div class="check-item"><input type="checkbox" id="ck1"> <label for="ck1">周本</label></div>
                 <div class="check-item"><input type="checkbox" id="ck2"> <label for="ck2">挖掘</label></div>
-                <div class="check-item"><input type="checkbox" id="ck3"> <label for="ck3">商城每周礼包</label></div>
-                <div class="check-item"><input type="checkbox" id="ck4"> <label for="ck4">半月奇迹之冠巅峰赛</label></div>
-                <div class="check-item"><input type="checkbox" id="ck5"> <label for="ck5">每周奇迹之冠挑战赛</label></div>
+                <div class="check-item"><input type="checkbox" id="ck3"> <label for="ck3">星光追寻</label></div>
+                <div class="check-item"><input type="checkbox" id="ck4"> <label for="ck4">商城每周礼包</label></div>
+                <div class="check-item"><input type="checkbox" id="ck5"> <label for="ck5">半月奇迹之冠巅峰赛</label></div>
+                <div class="check-item"><input type="checkbox" id="ck6"> <label for="ck6">每周奇迹之冠挑战赛</label></div>
+                <div class="check-item"><input type="checkbox" id="ck7"> <label for="ck7">星光小铺</label></div>
             </div>
-
             <div class="btn-group">
                 <button class="btn-gen" id="btnGen">生成汇报文本</button>
                 <button class="btn-copy" id="btnCopy">一键复制</button>
             </div>
         </div>
-
         <div class="preview-box">
             <div class="preview-title">📄生成预览</div>
             <div id="preview"></div>
         </div>
     </div>
-
 <script>
     // 本地存储key
     const STORAGE_KEY = "ww代肝多老板数据";
@@ -299,27 +294,26 @@
         document.getElementById("ck3"),
         document.getElementById("ck4"),
         document.getElementById("ck5"),
+        document.getElementById("ck6"),
+        document.getElementById("ck7"),
     ];
-    const ckNameList = ["周本","挖掘","商城每周礼包","半月奇迹之冠巅峰赛","每周奇迹之冠挑战赛"];
+    const ckNameList = ["周本","挖掘","星光追寻","商城每周礼包","半月奇迹之冠巅峰赛","每周奇迹之冠挑战赛","星光小铺"];
     const btnGen = document.getElementById("btnGen");
     const btnCopy = document.getElementById("btnCopy");
     const preview = document.getElementById("preview");
-
     let bossDataList = [];
     let activeBossId = null;
-
     // 获取今天日期
     function getTodayStr(){
         const now = new Date();
         return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
     }
-
     // 新建空老板对象
     function createEmptyBoss(){
         return {
             id: Date.now().toString(),
             bossName: "新老板",
-            typeSel: "daily",
+            typeSel: "single",
             progress: getTodayStr(),
             monthCard: "",
             miracle: "",
@@ -329,10 +323,9 @@
             crystal: "",
             homeNote: "",
             yuanBao: "",
-            ck: [false,false,false,false,false]
+            ck: [false,false,false,false,false,false,false]
         }
     }
-
     // 读取本地数据
     function loadStorage(){
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -343,12 +336,10 @@
             bossDataList = [createEmptyBoss()];
         }
     }
-
     // 保存全部数据到本地
     function saveStorage(){
         localStorage.setItem(STORAGE_KEY, JSON.stringify(bossDataList));
     }
-
     // 渲染左侧老板列表
     function renderBossList(){
         bossListWrap.innerHTML = "";
@@ -384,7 +375,6 @@
             bossListWrap.appendChild(div);
         })
     }
-
     // 将老板数据填充到表单
     function loadBossToForm(boss){
         bossNameInput.value = boss.bossName;
@@ -402,7 +392,6 @@
             ckList[idx].checked = val;
         })
     }
-
     // 把当前表单保存到当前选中老板
     function saveCurrentBoss(){
         const boss = bossDataList.find(item=>item.id === activeBossId);
@@ -421,7 +410,6 @@
         boss.ck = ckList.map(el=>el.checked);
         saveStorage();
     }
-
     // 添加新老板
     addBossBtn.addEventListener("click", ()=>{
         saveCurrentBoss();
@@ -432,13 +420,11 @@
         saveStorage();
         renderBossList();
     })
-
     // 生成汇报文本
     btnGen.onclick = function(){
         saveCurrentBoss();
         const boss = bossDataList.find(item=>item.id === activeBossId);
         if(!boss) return;
-
         const type = boss.typeSel;
         const progress = boss.progress || "/";
         const monthCard = boss.monthCard;
@@ -450,35 +436,73 @@
         const homeNoteVal = boss.homeNote;
         const yuanBaoVal = boss.yuanBao;
         const ckState = boss.ck;
-
         let text = "";
-        text += `☁代肝内容: ${type==='daily'?'单日常':type==='threeday'?'三日常':'包月'}\n`;
-        text += `☁进度: ${progress}\n`;
-        text += `✧─・～⏳倒计时～・─✧\n`;
-        if(monthCard) text += `📍月卡时间: 剩余 ${monthCard} 天\n`;
-        if(miracle) text += `📍奇迹之冠 ${miracle} 天后结束\n`;
-        if(resonate) text += `📍五星共鸣阁 ${resonate} 天后结束\n`;
-        if(signDay) text += `📍签到 已兑换/已签到 ${signDay} 天\n`;
 
-        text += `✧─・～💎资源～・─✧\n`;
-        if(diamond) text += `✨粉钻: ${diamond}\n`;
-        if(crystal) text += `✨星光结晶: ${crystal}\n`;
-        text += `✨体力: 已清空\n`;
-
-        if(type === 'threeday'){
-            if(homeNoteVal) text += `✨家园记事: ${homeNoteVal}/2000\n`;
-            if(yuanBaoVal) text += `✨园宝收购: ${yuanBaoVal}/600000\n`;
+        if(type === "single"){
+            // 单日常模板
+            text += `ㆍ┈ㆍ┈ㆍ┈ ✦ ┈ㆍ┈ㆍ┈ㆍ\n`;
+            text += `💭◦代肝内容：单日常\n`;
+            text += `💭◦进度：${progress}\n`;
+            text += `⋆✩—·༺ 倒计时༻·—\n`;
+            if(monthCard) text += `📍◦月卡时间：剩余 ${monthCard} 天\n`;
+            if(miracle) text += `📍◦奇迹之冠 ${miracle} 天后结束\n`;
+            if(resonate) text += `📍◦五星共鸣阁 ${resonate} 天后结束\n`;
+            if(signDay) text += `📍◦签到 已兑换 ${signDay} 天\n`;
+            text += `⋆✩—·༺ 资源༻·—\n`;
+            if(diamond) text += `✨️◦粉钻：${diamond}\n`;
+            if(crystal) text += `✨️◦星光结晶：${crystal}\n`;
+            text += `✨️◦体力：已清空\n`;
+            text += `⋆✩—·༺ 其它༻·—\n`;
+            //单日常：只取 周本、挖掘、商城每周礼包、半月奇迹之冠巅峰赛、每周奇迹之冠挑战赛
+            const singleIdx = [0,1,3,4,5];
+            singleIdx.forEach(i=>{
+                text += `${ckNameList[i]}${ckState[i] ? "✔" : "○"}\n`;
+            })
+        }else if(type === "double"){
+            //双日常模板
+            text += `ㆍ┈ㆍ┈ㆍ┈ ✦ ┈ㆍ┈ㆍ┈ㆍ\n`;
+            text += `💭◦代肝内容：双日常\n`;
+            text += `💭◦进度：${progress}\n`;
+            text += `⋆✩—·༺ 倒计时༻·—\n`;
+            if(monthCard) text += `📍◦月卡时间：剩余 ${monthCard} 天\n`;
+            if(miracle) text += `📍◦奇迹之冠 ${miracle} 天后结束\n`;
+            if(resonate) text += `📍◦五星共鸣阁 ${resonate} 天后结束\n`;
+            if(signDay) text += `📍◦签到 已兑换 ${signDay} 天\n`;
+            text += `⋆✩—·༺ 资源༻·—\n`;
+            if(diamond) text += `✨️◦粉钻：${diamond}\n`;
+            if(crystal) text += `✨️◦星光结晶：${crystal}\n`;
+            text += `✨️◦体力：已清空\n`;
+            text += `⋆✩—·༺ 其它༻·—\n`;
+            //双日常全部7项
+            ckState.forEach((checked,idx)=>{
+                text += `${ckNameList[idx]}${checked ? "✔" : "○"}\n`;
+            })
+        }else if(type === "triple"){
+            //三日常模板
+            text += `ㆍ┈ㆍ┈ㆍ┈ ✦ ┈ㆍ┈ㆍ┈ㆍ\n`;
+            text += `💭◦代肝内容：三日常\n`;
+            text += `💭◦进度：${progress}\n`;
+            text += `⋆✩—·༺ 倒计时༻·—\n`;
+            if(monthCard) text += `📍◦月卡时间：剩余 ${monthCard} 天\n`;
+            if(miracle) text += `📍◦奇迹之冠 ${miracle} 天后结束\n`;
+            if(resonate) text += `📍◦五星共鸣阁 ${resonate} 天后结束\n`;
+            if(signDay) text += `📍◦已签到 ${signDay} 天\n`;
+            text += `⋆✩—·༺ 资源汇报༻·—\n`;
+            if(diamond) text += `✨️◦粉钻：${diamond}\n`;
+            if(crystal) text += `✨️◦星光结晶：${crystal}\n`;
+            text += `✨️◦体力：已清空\n`;
+            text += `⋆✩—·༺ 家园༻·—\n`;
+            if(homeNoteVal) text += `🌸◦家园记事：${homeNoteVal}/2000 \n`;
+            if(yuanBaoVal) text += `🌸◦园宝收购：${yuanBaoVal}/600000\n`;
+            text += `⋆✩—·༺ 其它༻·—\n`;
+            //三日常全部7项
+            ckState.forEach((checked,idx)=>{
+                text += `${ckNameList[idx]}${checked ? "✔" : "○"}\n`;
+            })
         }
-
-        text += `✧─・～📋其它～・─✧\n`;
-        ckState.forEach((checked,idx)=>{
-            text += (checked ? "✔ " : "○ ") + ckNameList[idx] + "\n";
-        })
         text += `(☆▽☆)汇报完毕 已下号`;
-
         preview.innerText = text;
     }
-
     // 一键复制
     btnCopy.onclick = async function(){
         const txt = preview.innerText;
@@ -493,13 +517,11 @@
             alert("复制失败，请手动全选复制");
         }
     }
-
     // 初始化
     loadStorage();
     activeBossId = bossDataList[0].id;
     loadBossToForm(bossDataList[0]);
     renderBossList();
-
     // 表单改动自动保存
     const allInputs = document.querySelectorAll("input, select");
     allInputs.forEach(input=>{
