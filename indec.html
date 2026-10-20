@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无限暖暖｜代肝每日汇报生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", sans-serif;
+        }
+        body {
+            background-color: #f7f0f8;
+            padding: 24px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 4px 16px rgba(180,120,200,0.15);
+            margin-bottom: 24px;
+        }
+        h1 {
+            text-align: center;
+            color: #9c5fb4;
+            margin-bottom: 24px;
+            font-size: 24px;
+        }
+        .form-row {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #66347a;
+            font-weight: 500;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e3cdea;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            transition: 0.2s;
+        }
+        select:focus, input:focus {
+            border-color: #b87fc9;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap:16px;
+        }
+        .btn-group {
+            display:flex;
+            gap:12px;
+            margin-top:20px;
+        }
+        button {
+            flex:1;
+            padding:12px;
+            border:none;
+            border-radius:10px;
+            font-size:16px;
+            cursor:pointer;
+            transition:0.2s;
+        }
+        #genBtn {
+            background-color:#b87fc9;
+            color:white;
+        }
+        #copyBtn {
+            background-color:#f0d9f7;
+            color:#753b8c;
+        }
+        button:hover {
+            opacity:0.9;
+        }
+        .preview-wrap {
+            margin-top:28px;
+        }
+        .preview-title {
+            color:#9c5fb4;
+            margin-bottom:12px;
+            font-weight:bold;
+        }
+        #outputBox {
+            white-space: pre-wrap;
+            background:#fff;
+            border:1px solid #e8d3f0;
+            border-radius:14px;
+            padding:24px;
+            font-size:15px;
+            line-height:1.8;
+            color:#442255;
+        }
+        .tip {
+            margin-top:10px;
+            color:#999;
+            font-size:14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>✨无限暖暖代肝每日汇报生成器</h1>
+            <div class="form-row">
+                <label>选择代肝类型</label>
+                <select id="typeSelect">
+                    <option value="single">单日常</option>
+                    <option value="double">双日常</option>
+                    <option value="triple">三日常</option>
+                </select>
+            </div>
+            <div class="grid-2">
+                <div class="form-row">
+                    <label>进度</label>
+                    <input id="progress" placeholder="如无则填 /" value="/">
+                </div>
+                <div class="form-row">
+                    <label>月卡剩余天数</label>
+                    <input id="monthCard" placeholder="数字">
+                </div>
+                <div class="form-row">
+                    <label>奇迹之冠结束天数</label>
+                    <input id="crownDay" placeholder="数字">
+                </div>
+                <div class="form-row">
+                    <label>五星共鸣阁结束天数</label>
+                    <input id="resonanceDay" placeholder="数字">
+                </div>
+                <div class="form-row">
+                    <label>签到已兑换/已签到天数</label>
+                    <input id="signDay" placeholder="数字">
+                </div>
+                <div class="form-row">
+                    <label>粉钻数量</label>
+                    <input id="pinkDiamond" placeholder="填写数量">
+                </div>
+                <div class="form-row">
+                    <label>星光结晶</label>
+                    <input id="starCrystal" placeholder="填写数量">
+                </div>
+                <div class="form-row">
+                    <label>家园记事（仅三日常生效）</label>
+                    <input id="homeNote" placeholder="如 1200 /2000">
+                </div>
+                <div class="form-row">
+                    <label>园宝收购（仅三日常生效）</label>
+                    <input id="homeCoin" placeholder="如 450000 /600000">
+                </div>
+            </div>
+            <div class="btn-group">
+                <button id="genBtn">生成汇报文本</button>
+                <button id="copyBtn">一键复制</button>
+            </div>
+        </div>
+        <div class="card preview-wrap">
+            <div class="preview-title">📄 生成预览</div>
+            <div id="outputBox"></div>
+            <div class="tip">复制后可以直接发给老板，适配微信/聊天框</div>
+        </div>
+    </div>
+
+    <script>
+        const typeSelect = document.getElementById('typeSelect');
+        const progress = document.getElementById('progress');
+        const monthCard = document.getElementById('monthCard');
+        const crownDay = document.getElementById('crownDay');
+        const resonanceDay = document.getElementById('resonanceDay');
+        const signDay = document.getElementById('signDay');
+        const pinkDiamond = document.getElementById('pinkDiamond');
+        const starCrystal = document.getElementById('starCrystal');
+        const homeNote = document.getElementById('homeNote');
+        const homeCoin = document.getElementById('homeCoin');
+        const genBtn = document.getElementById('genBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const outputBox = document.getElementById('outputBox');
+
+        function generateText(){
+            const type = typeSelect.value;
+            const p = progress.value.trim() || "/";
+            const mc = monthCard.value.trim() || "";
+            const cd = crownDay.value.trim() || "";
+            const rd = resonanceDay.value.trim() || "";
+            const sd = signDay.value.trim() || "";
+            const pd = pinkDiamond.value.trim() || "";
+            const sc = starCrystal.value.trim() || "";
+            const hn = homeNote.value.trim() || "/2000";
+            const hc = homeCoin.value.trim() || "/600000";
+
+            let text = "";
+            const head = `ㆍ┈ㆍ┈ㆍ┈ ✦ ┈ㆍ┈ㆍ┈ㆍ\n`;
+            const foot = `(☆▽☆)汇报完毕 已下号`;
+
+            if(type === "single"){
+                text = `九理米的大雾:
+${head}💭◦代肝内容：单日常
+💭◦进度：${p}
+⋆✩—·༺ 倒计时༻·—
+📍◦月卡时间：剩余 ${mc} 天
+📍◦奇迹之冠 ${cd} 天后结束
+📍◦五星共鸣阁 ${rd} 天后结束
+📍◦签到 已兑换 ${sd} 天
+⋆✩—·༺ 资源༻·—
+✨️◦粉钻：${pd}
+✨️◦星光结晶：${sc}
+✨️◦体力：已清空
+⋆✩—·༺ 其它༻·—
+周本
+挖掘
+商城每周礼包
+半月奇迹之冠巅峰赛
+每周奇迹之冠挑战赛
+${foot}`;
+            }else if(type === "double"){
+                text = `九理米的大雾:
+${head}💭◦代肝内容：双日常
+💭◦进度：${p}
+⋆✩—·༺ 倒计时༻·—
+📍◦月卡时间：剩余 ${mc} 天
+📍◦奇迹之冠 ${cd} 天后结束
+📍◦五星共鸣阁 ${rd} 天后结束
+📍◦签到 已兑换 ${sd} 天
+⋆✩—·༺ 资源༻·—
+✨️◦粉钻：${pd}
+✨️◦星光结晶：${sc}
+✨️◦体力：已清空
+⋆✩—·༺ 其它༻·—
+周本
+挖掘
+星光追寻
+商城每周礼包
+半月奇迹之冠巅峰赛
+每周奇迹之冠挑战赛
+星光小铺
+${foot}`;
+            }else if(type === "triple"){
+                text = `九理米的大雾:
+${head}💭◦代肝内容：三日常
+💭◦进度：${p}
+⋆✩—·༺ 倒计时༻·—
+📍◦月卡时间：剩余 ${mc} 天
+📍◦奇迹之冠 ${cd} 天后结束
+📍◦五星共鸣阁 ${rd} 天后结束
+📍◦已签到 ${sd} 天
+⋆✩—·༺ 资源汇报༻·—
+✨️◦粉钻：${pd}
+✨️◦星光结晶：${sc}
+✨️◦体力：已清空
+⋆✩—·༺ 家园༻·—
+🌸◦家园记事：${hn}
+🌸◦园宝收购：${hc}
+⋆✩—·༺ 其它༻·—
+周本
+挖掘
+星光追寻
+半月奇迹之冠巅峰赛
+每周奇迹之冠挑战赛
+星光小铺
+${foot}`;
+            }
+            outputBox.innerText = text;
+        }
+
+        genBtn.addEventListener('click', generateText);
+        copyBtn.addEventListener('click', async ()=>{
+            const txt = outputBox.innerText;
+            if(!txt) return alert("请先生成汇报！");
+            try{
+                await navigator.clipboard.writeText(txt);
+                alert("✅复制成功！直接发给老板吧");
+            }catch(e){
+                alert("复制失败，请手动全选复制");
+            }
+        });
+        typeSelect.addEventListener('change', generateText);
+        generateText();
+    </script>
+</body>
+</html>
